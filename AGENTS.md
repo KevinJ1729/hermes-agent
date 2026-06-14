@@ -987,3 +987,12 @@ not the specific names.
 
 Reviewers should reject new change-detector tests; authors should convert
 them into invariants before re-requesting review.
+
+## GH Dashboard stateless inference service (2026-06-14)
+
+- Added `hermes_cli/stateless_inference_server.py` and `Dockerfile.hermes-inference` for a dedicated FastAPI service used by GH Dashboard LINE extraction.
+- The endpoint calls the existing `openai-codex` auxiliary client directly. It deliberately does not create an `AIAgent` and does not load sessions, memory, workspaces, skills, or tools.
+- Requests require `HERMES_INFERENCE_API_KEY`; model and concurrency are configured by `HERMES_INFERENCE_MODEL` and `HERMES_INFERENCE_MAX_CONCURRENCY`.
+- Codex OAuth is a separate device-code session stored on the dedicated Zeabur volume at `/opt/data/auth.json`. The file must remain readable and writable by the `hermes` user so token refresh works.
+- Zeabur service `hermes-inference` is live at `https://gh-hermes-inference.zeabur.app`; health, unauthorized `401`, restart persistence, and a structured Chinese extraction smoke test passed.
+- Focused verification: `pytest tests/hermes_cli/test_stateless_inference_server.py`, Ruff, and Python bytecode compilation passed. Docker was built by Zeabur because the local Docker daemon was unavailable.
